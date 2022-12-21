@@ -1,9 +1,9 @@
 function zipSlide(options) {
     let defaultOptions = {
-        container: ".slider",
-        slideClass: ".slide",
-        nextButton: ".slide-next",
-        prevButton: ".slide-prev",
+        sliderElement: ".slider",
+        slideClass: "slide",
+        nextButtonClass: "slide-next",
+        prevButtonClass: "slide-prev",
         autoplay: false,
         autoplaySpeed: 3000,
     }
@@ -12,17 +12,15 @@ function zipSlide(options) {
 
     const _this = this; // make this available to inner functions
 
+    const slider = document.querySelector(options.sliderElement)
 
-    const sliderContainer = document.querySelector(options.container);
-    const slides = sliderContainer.querySelectorAll(options.slideClass);
-
+    const slides = slider.querySelectorAll(`.${options.slideClass}`);
 
     let currentSlide = 0;
     let maxSlide = slides.length -1;
 
-
-
     this.init = function () {
+        slider.classList.add('zipslide-container')
         slides.forEach((slide, index) => {
             slide.style.transform = `translateX(${index * 100}%)`;
             
@@ -31,17 +29,18 @@ function zipSlide(options) {
 
         _this.insertControls();
 
-        _this.autoPlay();
+        options.autoplay && _this.autoPlay();
+
 
     }
 
     this.insertControls = function () {
         const nextBtn = document.createElement('button');
-        nextBtn.setAttribute("class", "next");
+        nextBtn.setAttribute("class", options.nextButtonClass);
         nextBtn.textContent = "Next";
 
         const prevBtn = document.createElement('button');
-        prevBtn.setAttribute("class", "prev");
+        prevBtn.setAttribute("class", options.prevButtonClass);
         prevBtn.textContent = "Prev";
 
         const controlsContainer = document.createElement('div');
@@ -50,7 +49,7 @@ function zipSlide(options) {
         controlsContainer.appendChild(prevBtn);
         controlsContainer.appendChild(nextBtn);
 
-        document.querySelector(options.container).appendChild(controlsContainer);
+        slider.appendChild(controlsContainer);
 
         nextBtn.addEventListener("click", function () {
             _this.nextSlide();
@@ -61,13 +60,13 @@ function zipSlide(options) {
         });
     }
 
+    // Add current-slide class to current-slide
     this.isCurrent = function(slide, index) {
         slide.classList.remove("current-slide");
         if (currentSlide === index) {
             slide.classList.add('current-slide')
         } 
     }
-    
 
     this.goToSlide = function() {
         slides.forEach((slide, index) => {
@@ -86,7 +85,6 @@ function zipSlide(options) {
         _this.goToSlide()
     }
 
-
     this.prevSlide = function() {
         if (currentSlide === 0) {
             currentSlide = maxSlide;
@@ -97,7 +95,6 @@ function zipSlide(options) {
     }
     
     this.autoPlay = function() {
-        
         let timeout;
         let timer_on = 0;
         let slide_time = options.autoplaySpeed;
@@ -109,18 +106,20 @@ function zipSlide(options) {
             }, slide_time);
         };
         
-        sliderContainer.addEventListener('mouseenter', () => {
+        // Pause autoplay when hovering over slider container
+
+        slider.addEventListener('mouseenter', () => {
             clearTimeout(timeout);
             timer_on = 0;
         });
-        
-        sliderContainer.addEventListener('mouseleave', () => {
+        // Resume when moving mouse out of slider container
+        slider.addEventListener('mouseleave', () => {
             if (!timer_on) {
                 timer_on = 1;
                 slideTimer();
             }
         });
-    
+        
         slideTimer()
     }
     
